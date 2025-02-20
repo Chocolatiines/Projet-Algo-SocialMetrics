@@ -35,6 +35,8 @@ try:
         """)
         print("Table tweets created successfully.")
 
+        cursor.execute("TRUNCATE TABLE tweets")
+
         if os.path.exists(CSV_FILE):
             df = pd.read_csv(CSV_FILE)
 
