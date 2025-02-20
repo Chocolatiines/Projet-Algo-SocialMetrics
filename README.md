@@ -41,7 +41,13 @@ Exemple de requête :
 curl -X POST "http://127.0.0.1:5000/analyze" -H "Content-Type: application/json" -d '{"tweet": "Trump est un leader exceptionnel !"}'
 ```
 
+Pour lancer un entraînement automatique du modèle, vous pouvez utiliser la commande suivante sur Mac ou Linux :
 
+```bash
+0 0 * * 1 /usr/bin/python3 /chemin/vers/train_model.py >> /chemin/vers/logs.txt 2>&1
+```
+
+Et sur Windaube, vous pouvez utiliser le planificateur de tâches.
 
 
 
