@@ -5,7 +5,7 @@ import joblib
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from init_db import MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DB
 
 try:
@@ -17,7 +17,7 @@ try:
     )
 
     if connection.is_connected():
-        print: "Connected to MySQL"
+        print("Connected to MySQL")
 
         query = ("SELECT text, positive, negative FROM tweets")
         df = pd.read_sql(query, connection)
@@ -37,22 +37,24 @@ try:
             "aussi", "être", "avoir", "faire", "comme", "tout", "bien", "mal", "on", "lui"
         ]
 
-        vectorizer = CountVectorizer(stop_words=french_stopwords, max_features=1000)
+        vectorizer = CountVectorizer(stop_words=french_stopwords, max_features=100)
         X = vectorizer.fit_transform(df['text_clean'])
 
-        # Train the positive model
-        X_train, X_test, y_train, y_test = train_test_split(X, df['positive'], test_size=0.2, random_state=42)
-        model_positive = LogisticRegression()
-        model_positive.fit(X_train, y_train)
-        print("Positive model trained successfully.")
-        print(classification_report(y_test, model_positive.predict(X_test)))
+        X_train, X_test, y_train_pos, y_test_pos, y_train_neg, y_test_neg = train_test_split(
+            X, df['positive'], df['negative'], test_size=0.3, random_state=42
+        )
 
-        # Train the negative model
-        X_train, X_test, y_train, y_test = train_test_split(X, df['negative'], test_size=0.2, random_state=42)
+        model_positive = LogisticRegression()
+        model_positive.fit(X_train, y_train_pos)
+        print("Positive model trained successfully.")
+        print(classification_report(y_test_pos, model_positive.predict(X_test)))
+        print(confusion_matrix(y_test_pos, model_positive.predict(X_test)))
+
         model_negative = LogisticRegression()
-        model_negative.fit(X_train, y_train)
+        model_negative.fit(X_train, y_train_neg)
         print("Negative model trained successfully.")
-        print(classification_report(y_test, model_negative.predict(X_test)))
+        print(classification_report(y_test_neg, model_negative.predict(X_test)))
+        print(confusion_matrix(y_test_neg, model_negative.predict(X_test)))
 
         # Save the models
         joblib.dump(model_positive, "model_positive.joblib")
